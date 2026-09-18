@@ -322,11 +322,25 @@
   #thanks h2 { margin: 0 0 10px; font-size: 22px; }
   #thanks p { color: var(--muted); max-width: 56ch; margin: 0 auto 20px; }
 
+  .thanks-footnote {
+    margin: 22px 0 0;
+    text-align: center;
+  }
+
   footer {
     max-width: 900px; margin: 0 auto;
     padding: 0 20px 60px;
     font-size: 12.5px; color: var(--muted);
   }
+
+  /* Dashboard link (hidden until ENDPOINT is configured) */
+  a.dashboard-link {
+    color: var(--accent-2);
+    text-decoration: none;
+    border-bottom: 1px solid currentColor;
+    font-size: 12.5px;
+  }
+  a.dashboard-link:hover { color: var(--accent); }
 </style>
 </head>
 <body>
@@ -490,6 +504,12 @@
     <button type="button" class="btn btn-secondary" id="downloadBtn">Download my responses (JSON)</button>
     <button type="button" class="btn btn-secondary" id="copyBtn">Copy to clipboard</button>
   </div>
+
+  <p class="thanks-footnote">
+    <a class="dashboard-link" href="#" target="_blank" rel="noopener" hidden>
+      Department staff: view aggregate results →
+    </a>
+  </p>
 </section>
 
 </main>
@@ -498,6 +518,12 @@
   <p>
     This survey is anonymous. No IP addresses, names, or student IDs are collected.
     Questions about this survey can be directed to the department office.
+  </p>
+
+  <p>
+    <a class="dashboard-link" href="#" target="_blank" rel="noopener" hidden>
+      Department staff: view aggregate results →
+    </a>
   </p>
 </footer>
 
@@ -519,6 +545,16 @@
   /* ================================================================ */
 
   const SURVEY_VERSION = "1.0";
+
+  /* Point every dashboard link at the same web-app URL.
+     If ENDPOINT is empty (demo mode), the links stay hidden. */
+  (function () {
+    if (!ENDPOINT) return;
+    document.querySelectorAll('.dashboard-link').forEach(function (a) {
+      a.href = ENDPOINT;
+      a.hidden = false;
+    });
+  })();
 
   /* ------------------------------------------------------------------
      SCALES
