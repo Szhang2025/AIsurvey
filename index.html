@@ -505,11 +505,6 @@
     <button type="button" class="btn btn-secondary" id="copyBtn">Copy to clipboard</button>
   </div>
 
-  <p class="thanks-footnote">
-    <a class="dashboard-link" href="#" target="_blank" rel="noopener" hidden>
-      View aggregate results →
-    </a>
-  </p>
 </section>
 
 </main>
@@ -517,8 +512,14 @@
 <footer>
   <p>
     This survey is anonymous. No IP addresses, names, or student IDs are collected.
+    Questions about this survey can be directed to the department office.
   </p>
 
+  <p>
+    <a class="dashboard-link" href="#" target="_blank" rel="noopener" hidden>
+      View aggregate results →
+    </a>
+  </p>
 </footer>
 
 <script>
@@ -528,12 +529,10 @@
   /* ================================================================
      >>>>>>>>>>>>>>>>  ENDPOINT  IS  RIGHT  HERE  <<<<<<<<<<<<<<<<<<<<
      ================================================================
-     This is the only line you need to edit. Paste your Google Apps
-     Script web-app URL between the quotes. The URL ends in "/exec".
-     Get it from: Apps Script -> Deploy -> Manage deployments
-                  -> copy the "Web app URL".
-     Leave the quotes empty ("") to run in demo mode — responses
-     stay in the browser and can be downloaded as JSON.
+     Paste your Google Apps Script web-app URL between the quotes.
+     The URL ends in "/exec". Get it from:
+       Apps Script -> Deploy -> Manage deployments -> Web app URL
+     Leave it empty ("") to run in demo mode.
      ================================================================ */
   const ENDPOINT = "https://script.google.com/macros/s/AKfycbzbFuzr-Q8x0BDK3k9lPDS23JH67q9eno38AJfgSEbL9-0pN69Sf5XapTbDtQhpjrj3/exec";
   /* ================================================================ */
@@ -743,8 +742,8 @@
   }
 
   /* Required groups: a radio group or checkbox group counts as ONE
-     question. Crucially, the whole group is collected — not just the
-     single element that happens to carry the [required] attribute. */
+     question. Collects the whole group, not just the element that
+     happens to carry the [required] attribute. */
   function requiredGroups() {
     const groups = new Map();
 
