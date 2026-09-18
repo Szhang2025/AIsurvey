@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Student Survey: AI Use in Teaching and Learning</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+
+  :root {
+    --bg: #f4f6f8;
+    --card: #ffffff;
+    --ink: #161b22;
+    --muted: #5b6674;
+    --line: #dce1e7;
+    --accent: #1f4e79;
+    --accent-2: #2f6fa8;
+    --soft: #eaf1f8;
+    --warn: #b3261e;
+    --warn-bg: #fdf0ef;
+    --radius: 12px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px;
+    padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+
+  .skip-link {
+    position: absolute; left: -999px; top: 0; z-index: 100;
+    background: var(--accent); color: #fff; padding: 10px 16px;
+    border-radius: 0 0 8px 0; text-decoration: none;
+  }
+  .skip-link:focus { left: 0; }
+
+  /* ---------- Header ---------- */
+  .page-head {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px 16px;
+  }
+  .eyebrow {
+    margin: 0 0 6px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--accent-2);
+  }
+  .page-head h1 {
+    margin: 0 0 12px;
+    font-size: clamp(24px, 4vw, 34px);
+    line-height: 1.2;
+    letter-spacing: -.015em;
+  }
+  .lede { margin: 0 0 16px; color: var(--muted); max-width: 68ch; }
+  .meta {
+    display: flex; flex-wrap: wrap; gap: 8px 20px;
+    margin: 0; padding: 0; list-style: none;
+    font-size: 13px; color: var(--muted);
+  }
+  .meta li { display: flex; align-items: center; gap: 6px; }
+  .meta li::before {
+    content: ""; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent-2); flex: none;
+  }
+
+  /* ---------- Progress ---------- */
+  .progress-wrap {
+    position: sticky; top: 0; z-index: 20;
+    background: rgba(244,246,248,.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+    padding: 10px 20px;
+  }
+  .progress-inner { max-width: 900px; margin: 0 auto; }
+  .progress {
+    height: 6px; background: #e2e7ec; border-radius: 99px; overflow: hidden;
+  }
+  .progress span {
+    display: block; height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    border-radius: 99px; transition: width .25s ease;
+  }
+  .progress-text {
+    margin: 6px 0 0; font-size: 12px; color: var(--muted);
+  }
+
+  /* ---------- Layout ---------- */
+  main { max-width: 900px; margin: 0 auto; padding: 24px 20px 80px; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin: 0 0 20px;
+    box-shadow: 0 1px 2px rgba(16,24,40,.04);
+  }
+  @media (max-width: 560px) { .card { padding: 18px; } }
+
+  fieldset { border: 0; margin: 0; padding: 0; }
+
+  legend {
+    padding: 0;
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: -.01em;
+  }
+  .section-num {
+    display: inline-block;
+    min-width: 26px; height: 26px; line-height: 26px;
+    margin-right: 10px; padding: 0 6px;
+    border-radius: 7px;
+    background: var(--soft); color: var(--accent);
+    font-size: 13px; font-weight: 700; text-align: center;
+    vertical-align: 2px;
+  }
+  .section-note { margin: 8px 0 20px; color: var(--muted); font-size: 14px; max-width: 70ch; }
+
+  .q { margin: 0 0 22px; }
+  .q:last-child { margin-bottom: 0; }
+  .q-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .q-help {
+    display: block; font-weight: 400; font-size: 13.5px;
+    color: var(--muted); margin-top: 3px;
+  }
+  .req { color: var(--warn); font-weight: 700; margin-left: 3px; }
+
+  /* ---------- Inputs ---------- */
+  select, input[type="text"], textarea {
+    font: inherit; color: inherit;
+    background: #fff;
+    border: 1px solid #c4ccd5;
+    border-radius: 8px;
+    padding: 9px 11px;
+    max-width: 100%;
+  }
+  select { min-width: 240px; }
+  input[type="text"] { width: 100%; max-width: 420px; }
+  textarea { width: 100%; min-height: 96px; resize: vertical; }
+  select:focus-visible, input:focus-visible, textarea:focus-visible {
+    outline: 2px solid var(--accent-2); outline-offset: 1px; border-color: var(--accent-2);
+  }
+
+  .options { display: grid; gap: 8px; }
+  .options.cols { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+
+  .opt {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 9px 12px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    cursor: pointer;
+    background: #fff;
+    transition: background .12s, border-color .12s;
+  }
+  .opt:hover { background: var(--soft); border-color: #b9cfe3; }
+  .opt input { margin: 3px 0 0; accent-color: var(--accent); flex: none; }
+  .opt span { font-size: 15px; }
+
+  /* ---------- Matrix tables ---------- */
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: #fff;
+    -webkit-overflow-scrolling: touch;
+  }
+  table.matrix {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 640px;
+    font-size: 14.5px;
+  }
+  table.matrix caption { text-align: left; }
+  .matrix thead th {
+    background: #f7f9fb;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    text-align: center;
+    padding: 8px 4px;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  .matrix thead th.corner {
+    text-align: left; padding-left: 14px; min-width: 250px;
+    font-size: 12px; letter-spacing: .06em; text-transform: uppercase;
+  }
+  .matrix thead th .num { display: block; font-size: 14px; color: var(--ink); }
+  .matrix thead th small { display: block; font-weight: 500; font-size: 10.5px; }
+
+  .matrix tbody th {
+    text-align: left;
+    font-weight: 500;
+    padding: 10px 14px;
+    min-width: 250px;
+    max-width: 360px;
+    border-top: 1px solid var(--line);
+    line-height: 1.35;
+  }
+  .matrix tbody td {
+    position: relative;
+    padding: 0;
+    width: 62px;
+    border-top: 1px solid var(--line);
+    border-left: 1px solid var(--line);
+    text-align: center;
+  }
+  .matrix tbody tr:hover th,
+  .matrix tbody tr:hover td { background: #fafcfe; }
+
+  .matrix input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 1px; height: 1px;
+    margin: 0;
+  }
+  .matrix .cell-label {
+    display: flex; align-items: center; justify-content: center;
+    height: 46px; cursor: pointer;
+  }
+  .matrix .cell-label::before {
+    content: "";
+    width: 18px; height: 18px;
+    border: 2px solid #b9c2cc;
+    border-radius: 50%;
+    transition: background .12s, border-color .12s, box-shadow .12s;
+  }
+  .matrix .cell-label:hover::before { border-color: var(--accent-2); }
+  .matrix input:checked + .cell-label::before {
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: inset 0 0 0 3px #fff;
+  }
+  .matrix input:focus-visible + .cell-label::before {
+    outline: 2px solid var(--accent-2);
+    outline-offset: 3px;
+  }
+
+  .scroll-hint {
+    margin: 8px 0 0; font-size: 12.5px; color: var(--muted);
+  }
+  @media (min-width: 780px) { .scroll-hint { display: none; } }
+
+  /* ---------- Invalid state ---------- */
+  .q.invalid { border-left: 3px solid var(--warn); padding-left: 12px; margin-left: -15px; }
+  .matrix tbody tr.invalid th,
+  .matrix tbody tr.invalid td { background: var(--warn-bg); }
+
+  /* ---------- Slider ---------- */
+  .slider-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  input[type="range"] { flex: 1 1 260px; accent-color: var(--accent); max-width: 480px; }
+  .slider-out {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700; font-size: 18px; color: var(--accent);
+    min-width: 62px;
+  }
+  .slider-ends {
+    display: flex; justify-content: space-between;
+    max-width: 480px; font-size: 12.5px; color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* ---------- Submit ---------- */
+  .submit-card { text-align: left; }
+  .error-banner {
+    display: none;
+    margin: 0 0 16px;
+    padding: 12px 14px;
+    border-radius: 9px;
+    background: var(--warn-bg);
+    border: 1px solid #e7bdb9;
+    color: var(--warn);
+    font-size: 14.5px;
+    font-weight: 600;
+  }
+  .error-banner.show { display: block; }
+
+  .btn {
+    font: inherit; font-weight: 600;
+    border-radius: 9px; border: 1px solid transparent;
+    padding: 12px 26px; cursor: pointer;
+    transition: background .15s, border-color .15s;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #17395a; }
+  .btn-secondary {
+    background: #fff; color: var(--accent); border-color: #b9cfe3;
+    padding: 9px 18px; font-size: 14.5px;
+  }
+  .btn-secondary:hover { background: var(--soft); }
+
+  .btn-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+
+  /* ---------- Thank you ---------- */
+  #thanks {
+    display: none;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 32px 24px;
+    text-align: center;
+  }
+  #thanks.show { display: block; }
+  #thanks h2 { margin: 0 0 10px; font-size: 22px; }
+  #thanks p { color: var(--muted); max-width: 56ch; margin: 0 auto 20px; }
+
+  footer {
+    max-width: 900px; margin: 0 auto;
+    padding: 0 20px 60px;
+    font-size: 12.5px; color: var(--muted);
+  }
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#survey">Skip to survey</a>
+
+<header class="page-head">
+  <p class="eyebrow">Department of ____________________</p>
+  <h1>How is AI use in teaching affecting your learning?</h1>
+  <p class="lede">
+    This survey asks how you actually experience AI in your courses —
+    where it helps you learn, and where it gets in the way. Your honest answers will shape
+    guidance for the whole department.
+  </p>
+  <ul class="meta">
+    <li>About 5–7 minutes</li>
+    <li>Anonymous</li>
+    <li>Results reported only in aggregate</li>
+    <li>No instructor sees individual responses</li>
+  </ul>
+</header>
+
+<div class="progress-wrap">
+  <div class="progress-inner">
+    <div class="progress" role="progressbar" aria-label="Survey progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressbar">
+      <span id="progressBar"></span>
+    </div>
+    <p class="progress-text" id="progressText" aria-live="polite">0% complete</p>
+  </div>
+</div>
+
+<main>
+<form id="survey" novalidate>
+
+  <!-- ============ 1. APPROPRIATENESS MATRIX ============ -->
+  <section class="card">
+    <fieldset>
+      <legend><span class="section-num">1</span>What's appropriate, and what isn't</legend>
+      <p class="section-note">
+        Rate each instructor practice on a scale from <strong>1 = completely inappropriate</strong> to
+        <strong>5 = completely appropriate</strong>. There are no wrong answers here — we want your honest read.
+      </p>
+      <div id="matrix-appropriateness"></div>
+      <p class="scroll-hint">Scroll the table sideways to see all the rating options.</p>
+    </fieldset>
+  </section>
+
+  <!-- ============ 2. IMPACT ON LEARNING ============ -->
+  <section class="card">
+    <fieldset>
+      <legend><span class="section-num">2</span>How it affects your learning</legend>
+      <p class="section-note">
+        How much do you agree with each statement?
+        <strong>1 = strongly disagree</strong>, <strong>5 = strongly agree</strong>.
+      </p>
+      <div id="matrix-learning"></div>
+      <p class="scroll-hint">Scroll the table sideways to see all the rating options.</p>
+    </fieldset>
+  </section>
+
+  <!-- ============ 3. OVERALL JUDGMENT ============ -->
+  <section class="card">
+    <fieldset>
+      <legend><span class="section-num">3</span>Your overall judgment</legend>
+
+      <div class="q">
+        <span class="q-label" id="overall-label">Overall, how has your instructors' use of AI affected your learning in this department?<span class="req" aria-hidden="true">*</span></span>
+        <div class="options" role="group" aria-labelledby="overall-label">
+          <label class="opt"><input type="radio" name="overall_effect" value="much_worse" required><span>Much worse</span></label>
+          <label class="opt"><input type="radio" name="overall_effect" value="somewhat_worse"><span>Somewhat worse</span></label>
+          <label class="opt"><input type="radio" name="overall_effect" value="no_effect"><span>No real effect</span></label>
+          <label class="opt"><input type="radio" name="overall_effect" value="somewhat_better"><span>Somewhat better</span></label>
+          <label class="opt"><input type="radio" name="overall_effect" value="much_better"><span>Much better</span></label>
+          <label class="opt"><input type="radio" name="overall_effect" value="mixed"><span>Mixed — it depends on the course</span></label>
+        </div>
+      </div>
+
+      <div class="q">
+        <label class="q-label" for="ai_share">
+          In your view, what share of a course's teaching should an instructor be allowed to hand over to AI?
+          <span class="q-help">0% = none of it; 100% = AI could do essentially all of it.</span>
+        </label>
+        <div class="slider-row">
+          <input type="range" id="ai_share" name="ai_share_ceiling" min="0" max="100" step="5" value="20"
+                 aria-describedby="ai_share_out">
+          <output class="slider-out" id="ai_share_out" for="ai_share">20%</output>
+        </div>
+        <div class="slider-ends"><span>0% — none</span><span>100% — all of it</span></div>
+      </div>
+
+      <div class="q">
+        <span class="q-label" id="grades-label">Do your grades in this course reflect your actual knowledge of the subject?<span class="req" aria-hidden="true">*</span></span>
+        <div class="options cols" role="group" aria-labelledby="grades-label">
+          <label class="opt"><input type="radio" name="grades_reflect_knowledge" value="1" required><span>1 — Strongly disagree</span></label>
+          <label class="opt"><input type="radio" name="grades_reflect_knowledge" value="2"><span>2</span></label>
+          <label class="opt"><input type="radio" name="grades_reflect_knowledge" value="3"><span>3 — Neutral</span></label>
+          <label class="opt"><input type="radio" name="grades_reflect_knowledge" value="4"><span>4</span></label>
+          <label class="opt"><input type="radio" name="grades_reflect_knowledge" value="5"><span>5 — Strongly agree</span></label>
+        </div>
+      </div>
+    </fieldset>
+  </section>
+
+  <!-- ============ 4. IN YOUR OWN WORDS ============ -->
+  <section class="card">
+    <fieldset>
+      <legend><span class="section-num">4</span>In your own words</legend>
+      <p class="section-note">
+        Specific examples are far more useful than general complaints.
+        These are optional, but they will be read carefully.
+      </p>
+
+      <div class="q">
+        <label class="q-label" for="helped">Describe a specific time an instructor's use of AI <strong>helped</strong> your learning.
+          <span class="q-help">What did they do, and why did it work?</span>
+        </label>
+        <textarea id="helped" name="open_helped" rows="4"></textarea>
+      </div>
+
+      <div class="q">
+        <label class="q-label" for="hurt">Describe a specific time an instructor's use of AI <strong>got in the way</strong> of your learning.
+          <span class="q-help">What did they do, and what did you lose because of it?</span>
+        </label>
+        <textarea id="hurt" name="open_hurt" rows="4"></textarea>
+      </div>
+
+      <div class="q">
+        <label class="q-label" for="rule">If you could set one rule about AI in teaching in this department, what would it be?</label>
+        <textarea id="rule" name="open_rule" rows="3"></textarea>
+      </div>
+    </fieldset>
+  </section>
+
+  <!-- ============ SUBMIT ============ -->
+  <section class="card submit-card">
+    <div class="error-banner" id="errorBanner" role="alert"></div>
+
+    <div class="q">
+      <label class="opt" style="border:none;padding-left:0;background:transparent">
+        <input type="checkbox" name="consent" value="yes" required>
+        <span>I understand my responses are anonymous and will be reported only in aggregate.<span class="req" aria-hidden="true">*</span></span>
+      </label>
+    </div>
+
+    <div class="btn-row">
+      <button type="submit" class="btn btn-primary">Submit survey</button>
+      <span class="progress-text" id="remainingText"></span>
+    </div>
+  </section>
+
+</form>
+
+<!-- ============ THANK YOU ============ -->
+<section id="thanks" aria-live="polite">
+  <h2>Thank you — this genuinely helps.</h2>
+  <p>
+    Your responses have been recorded. Every comment is read, and the patterns across all
+    responses will shape the guidance we give instructors.
+  </p>
+  <div class="btn-row" style="justify-content:center">
+    <button type="button" class="btn btn-secondary" id="downloadBtn">Download my responses (JSON)</button>
+    <button type="button" class="btn btn-secondary" id="copyBtn">Copy to clipboard</button>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p>
+    This survey is anonymous. No IP addresses, names, or student IDs are collected.
+    Questions about this survey can be directed to the department office.
+  </p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ------------------------------------------------------------------
+     CONFIG
+     Leave ENDPOINT empty to run in demo mode (responses stay in the
+     browser and can be downloaded as JSON). To collect real data, set
+     ENDPOINT to a form-handling URL that accepts a JSON POST.
+  ------------------------------------------------------------------ */
+  const ENDPOINT = "";
+  const SURVEY_VERSION = "1.0";
+
+  /* ------------------------------------------------------------------
+     SCALES
+  ------------------------------------------------------------------ */
+  const SCALE_APPROPRIATENESS = {
+    header: "Appropriate?",
+    options: [
+      { v: "1", label: "1", sub: "Never OK" },
+      { v: "2", label: "2", sub: "" },
+      { v: "3", label: "3", sub: "" },
+      { v: "4", label: "4", sub: "" },
+      { v: "5", label: "5", sub: "Always OK" },
+      { v: "unsure", label: "?", sub: "Not sure" }
+    ]
+  };
+
+  const SCALE_AGREEMENT = {
+    header: "Agree?",
+    options: [
+      { v: "1", label: "1", sub: "Strongly disagree" },
+      { v: "2", label: "2", sub: "" },
+      { v: "3", label: "3", sub: "Neutral" },
+      { v: "4", label: "4", sub: "" },
+      { v: "5", label: "5", sub: "Strongly agree" },
+      { v: "unsure", label: "?", sub: "No opinion" }
+    ]
+  };
+
+  /* ------------------------------------------------------------------
+     ITEMS
+  ------------------------------------------------------------------ */
+  const APPROPRIATENESS_ITEMS = [
+    { id: "email",     label: "Writing or polishing routine emails to students" },
+    { id: "slides",    label: "Building or formatting lecture slides" },
+    { id: "handouts",  label: "Drafting handouts, instructions, or rubrics for the instructor to review" },
+    { id: "practice",  label: "Creating extra practice problems or study guides for students" },
+    { id: "media",     label: "Generating images, diagrams, or video scripts for lectures" },
+    { id: "chatbot",   label: "Answering student questions in real time through a chatbot or AI teaching assistant" },
+    { id: "lecture",   label: "Writing the lecture notes or script the instructor delivers" },
+    { id: "exams",     label: "Generating quiz or exam questions that count toward your grade" },
+    { id: "grading",   label: "Grading your work or writing the feedback comments on it" },
+    { id: "readings",  label: "Writing whole sections of assigned readings or the course text" },
+    { id: "solutions", label: "Producing worked solutions for homework you are expected to solve yourself" },
+    { id: "explain",   label: "Explaining core concepts in place of the instructor explaining them" },
+    { id: "cover",     label: "Summarizing material so the instructor can skip teaching it" }
+  ];
+
+  const LEARNING_ITEMS = [
+    { id: "logistics", label: "I learn the subject better when my instructor uses AI for logistics like emails, slides, and formatting." },
+    { id: "core",      label: "When AI explains core concepts, I learn less than when the instructor explains them." },
+    { id: "prompts",   label: "I want to learn the subject matter, not how to write prompts." },
+    { id: "skills",    label: "This course has asked me to build AI skills I did not expect to need." },
+    { id: "detect",    label: "I can usually tell when course material was generated by AI." },
+    { id: "credible",  label: "AI-generated course materials feel less credible to me than instructor-made ones." },
+    { id: "expertise", label: "Heavy AI use by an instructor lowers my confidence in their expertise." },
+    { id: "questions", label: "I still feel comfortable asking my instructor questions that the AI could answer." },
+    { id: "fair",      label: "Instructor AI use has made grading feel less fair to me." },
+    { id: "again",     label: "I would take another course with this instructor." },
+    { id: "pressure",  label: "I feel pressure to use AI myself to keep up in this course." },
+    { id: "clear",     label: "My instructor is clear about when and how they use AI." },
+    { id: "helped",    label: "The AI use in this course helped me understand difficult material." },
+    { id: "polish",    label: "I would rather take a less polished course from a knowledgeable instructor than a polished, AI-driven one." }
+  ];
+
+  /* ------------------------------------------------------------------
+     MATRIX RENDERER
+  ------------------------------------------------------------------ */
+  function buildMatrix(mountId, prefix, items, scale, rowHeaderText) {
+    const mount = document.getElementById(mountId);
+    if (!mount) return;
+
+    const wrap = document.createElement("div");
+    wrap.className = "table-wrap";
+
+    const table = document.createElement("table");
+    table.className = "matrix";
+
+    const caption = document.createElement("caption");
+    caption.className = "sr-only";
+    caption.textContent = rowHeaderText;
+    table.appendChild(caption);
+
+    const thead = document.createElement("thead");
+    const headRow = document.createElement("tr");
+
+    const corner = document.createElement("th");
+    corner.scope = "col";
+    corner.className = "corner";
+    corner.textContent = "Instructor practice";
+    headRow.appendChild(corner);
+
+    scale.options.forEach(function (opt) {
+      const th = document.createElement("th");
+      th.scope = "col";
+      const num = document.createElement("span");
+      num.className = "num";
+      num.textContent = opt.label;
+      th.appendChild(num);
+      if (opt.sub) {
+        const small = document.createElement("small");
+        small.textContent = opt.sub;
+        th.appendChild(small);
+      }
+      headRow.appendChild(th);
+    });
+
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+
+    items.forEach(function (item) {
+      const tr = document.createElement("tr");
+
+      const th = document.createElement("th");
+      th.scope = "row";
+      th.textContent = item.label;
+      tr.appendChild(th);
+
+      scale.options.forEach(function (opt) {
+        const td = document.createElement("td");
+        const inputId = prefix + "_" + item.id + "_" + opt.v;
+
+        const input = document.createElement("input");
+        input.type = "radio";
+        input.name = prefix + "_" + item.id;
+        input.value = opt.v;
+        input.id = inputId;
+        input.required = true;
+
+        const label = document.createElement("label");
+        label.className = "cell-label";
+        label.setAttribute("for", inputId);
+
+        const sr = document.createElement("span");
+        sr.className = "sr-only";
+        sr.textContent = item.label + " — rating " + opt.label +
+                         (opt.sub ? " (" + opt.sub + ")" : "");
+        label.appendChild(sr);
+
+        td.appendChild(input);
+        td.appendChild(label);
+        tr.appendChild(td);
+      });
+
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(tbody);
+    wrap.appendChild(table);
+    mount.appendChild(wrap);
+  }
+
+  buildMatrix(
+    "matrix-appropriateness",
+    "appr",
+    APPROPRIATENESS_ITEMS,
+    SCALE_APPROPRIATENESS,
+    "Rate how appropriate each instructor use of AI is, from 1 (completely inappropriate) to 5 (completely appropriate)."
+  );
+
+  buildMatrix(
+    "matrix-learning",
+    "learn",
+    LEARNING_ITEMS,
+    SCALE_AGREEMENT,
+    "Rate how much you agree with each statement about AI and your learning, from 1 (strongly disagree) to 5 (strongly agree)."
+  );
+
+  /* ------------------------------------------------------------------
+     FORM LOGIC
+  ------------------------------------------------------------------ */
+  const form = document.getElementById("survey");
+  const progressBar = document.getElementById("progressBar");
+  const progressBarWrap = document.getElementById("progressbar");
+  const progressText = document.getElementById("progressText");
+  const remainingText = document.getElementById("remainingText");
+  const errorBanner = document.getElementById("errorBanner");
+  const thanks = document.getElementById("thanks");
+
+  const share = document.getElementById("ai_share");
+  const shareOut = document.getElementById("ai_share_out");
+  function updateShare() { shareOut.textContent = share.value + "%"; }
+  share.addEventListener("input", updateShare);
+  updateShare();
+
+  function requiredGroups() {
+    const groups = new Map();
+    form.querySelectorAll("[required]").forEach(function (el) {
+      const key = el.type === "radio"
+        ? "radio:" + el.name
+        : (el.type === "checkbox" && el.name && form.querySelectorAll('[name="' + el.name + '"]').length > 1
+            ? "check:" + el.name
+            : "field:" + (el.name || el.id));
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(el);
+    });
+    return groups;
+  }
+
+  function isAnswered(els) {
+    const first = els[0];
+    if (first.type === "radio") return els.some(function (e) { return e.checked; });
+    if (first.type === "checkbox") return els.some(function (e) { return e.checked; });
+    return String(first.value).trim() !== "";
+  }
+
+  function refreshProgress() {
+    const groups = requiredGroups();
+    let total = 0, done = 0;
+    groups.forEach(function (els) {
+      total++;
+      if (isAnswered(els)) done++;
+    });
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    progressBar.style.width = pct + "%";
+    progressBarWrap.setAttribute("aria-valuenow", String(pct));
+    progressText.textContent = pct + "% complete";
+    remainingText.textContent = done === total
+      ? "All required questions answered."
+      : (total - done) + " required question" + ((total - done) === 1 ? "" : "s") + " remaining";
+  }
+
+  form.addEventListener("input", refreshProgress);
+  form.addEventListener("change", refreshProgress);
+  refreshProgress();
+
+  form.addEventListener("change", function (e) {
+    const row = e.target.closest("tr, .q");
+    if (row && row.classList.contains("invalid")) row.classList.remove("invalid");
+    if (errorBanner.classList.contains("show")) errorBanner.classList.remove("show");
+  });
+
+  function collect() {
+    const fd = new FormData(form);
+    const out = {};
+    for (const pair of fd.entries()) {
+      const key = pair[0], value = pair[1];
+      if (out[key] === undefined) {
+        out[key] = value;
+      } else if (Array.isArray(out[key])) {
+        out[key].push(value);
+      } else {
+        out[key] = [out[key], value];
+      }
+    }
+    out._survey_version = SURVEY_VERSION;
+    out._submitted_at = new Date().toISOString();
+    out._user_agent = navigator.userAgent;
+    return out;
+  }
+
+  let savedPayload = null;
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    document.querySelectorAll(".invalid").forEach(function (el) {
+      el.classList.remove("invalid");
+    });
+
+    const missing = [];
+    requiredGroups().forEach(function (els) {
+      if (!isAnswered(els)) missing.push(els);
+    });
+
+    if (missing.length) {
+      missing.forEach(function (els) {
+        const container = els[0].closest("tr") || els[0].closest(".q") || els[0].closest("fieldset");
+        if (container) container.classList.add("invalid");
+      });
+
+      const firstEl = missing[0][0];
+      const firstContainer =
+        firstEl.closest("tr") || firstEl.closest(".q") || firstEl.closest("fieldset") || firstEl;
+
+      firstContainer.scrollIntoView({ behavior: "smooth", block: "center" });
+
+      errorBanner.textContent =
+        "Please answer " + missing.length + " more required question" +
+        (missing.length === 1 ? "" : "s") + " before submitting. They're highlighted below.";
+      errorBanner.classList.add("show");
+      return;
+    }
+
+    savedPayload = collect();
+
+    const finish = function () {
+      form.style.display = "none";
+      document.querySelector(".progress-wrap").style.display = "none";
+      thanks.classList.add("show");
+      thanks.scrollIntoView({ behavior: "smooth", block: "center" });
+    };
+
+    if (ENDPOINT) {
+      fetch(ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify(savedPayload)
+      })
+        .then(function () { finish(); })
+        .catch(function () {
+          errorBanner.textContent =
+            "Something went wrong sending your responses. Please try again, or download your answers and email them to the department office.";
+          errorBanner.classList.add("show");
+        });
+    } else {
+      console.log("Survey response (demo mode, not transmitted):", savedPayload);
+      finish();
+    }
+  });
+
+  document.getElementById("downloadBtn").addEventListener("click", function () {
+    if (!savedPayload) return;
+    const blob = new Blob([JSON.stringify(savedPayload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "ai-survey-response.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById("copyBtn").addEventListener("click", function () {
+    if (!savedPayload) return;
+    const text = JSON.stringify(savedPayload, null, 2);
+    const btn = this;
+    const done = function () {
+      const original = btn.textContent;
+      btn.textContent = "Copied!";
+      setTimeout(function () { btn.textContent = original; }, 1600);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done);
+    } else {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      done();
+    }
+  });
+
+})();
+</script>
+</body>
+</html>
