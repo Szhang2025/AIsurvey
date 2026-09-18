@@ -507,11 +507,11 @@
 
   /* ------------------------------------------------------------------
      CONFIG
-     Leave ENDPOINT empty to run in demo mode (responses stay in the
-     browser and can be downloaded as JSON). To collect real data, set
-     ENDPOINT to a form-handling URL that accepts a JSON POST.
+     Paste your Google Apps Script web-app URL (ends in /exec) below.
+     Leave it empty to run in demo mode (responses stay in the browser
+     and can be downloaded as JSON).
   ------------------------------------------------------------------ */
-  const ENDPOINT = "https://script.google.com/macros/s/AKfycbzbFuzr-Q8x0BDK3k9lPDS23JH67q9eno38AJfgSEbL9-0pN69Sf5XapTbDtQhpjrj3/exec";
+  const ENDPOINT = "https://script.google.com/macros/s/AKfycbzbFuzr-Q8x0BDK3k9lPDS23JH67q9eno38AJfgSEbL9-0pN69Sf5XapTbDtQhpjrj3/exec";           // e.g. "https://script.google.com/macros/s/AKfy.../exec"
   const SURVEY_VERSION = "1.0";
 
   /* ------------------------------------------------------------------
@@ -699,17 +699,36 @@
   share.addEventListener("input", updateShare);
   updateShare();
 
+  /* Return every element in the form that shares this name. */
+  function elementsNamed(name) {
+    return Array.prototype.slice.call(
+      form.querySelectorAll('[name="' + name.replace(/"/g, '\\"') + '"]')
+    );
+  }
+
+  /* Required groups: a radio group or checkbox group counts as ONE
+     question. Crucially, the whole group is collected — not just the
+     single element that happens to carry the [required] attribute. */
   function requiredGroups() {
     const groups = new Map();
+
     form.querySelectorAll("[required]").forEach(function (el) {
-      const key = el.type === "radio"
-        ? "radio:" + el.name
-        : (el.type === "checkbox" && el.name && form.querySelectorAll('[name="' + el.name + '"]').length > 1
-            ? "check:" + el.name
-            : "field:" + (el.name || el.id));
-      if (!groups.has(key)) groups.set(key, []);
-      groups.get(key).push(el);
+      let key, els;
+
+      if (el.type === "radio") {
+        key = "radio:" + el.name;
+        els = elementsNamed(el.name);
+      } else if (el.type === "checkbox" && elementsNamed(el.name).length > 1) {
+        key = "check:" + el.name;
+        els = elementsNamed(el.name);
+      } else {
+        key = "field:" + (el.name || el.id);
+        els = [el];
+      }
+
+      if (!groups.has(key)) groups.set(key, els);
     });
+
     return groups;
   }
 
@@ -740,12 +759,14 @@
   form.addEventListener("change", refreshProgress);
   refreshProgress();
 
+  /* Clear invalid styling as soon as the student answers */
   form.addEventListener("change", function (e) {
     const row = e.target.closest("tr, .q");
     if (row && row.classList.contains("invalid")) row.classList.remove("invalid");
     if (errorBanner.classList.contains("show")) errorBanner.classList.remove("show");
   });
 
+  /* Collect responses */
   function collect() {
     const fd = new FormData(form);
     const out = {};
@@ -767,6 +788,7 @@
 
   let savedPayload = null;
 
+  /* Submit */
   form.addEventListener("submit", function (e) {
     e.preventDefault();
 
@@ -808,9 +830,12 @@
     };
 
     if (ENDPOINT) {
+      /* Google Apps Script web apps don't answer CORS preflight, so we
+         send with mode:"no-cors" and a simple content type. */
       fetch(ENDPOINT, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify(savedPayload)
       })
         .then(function () { finish(); })
@@ -825,6 +850,7 @@
     }
   });
 
+  /* Download / copy helpers */
   document.getElementById("downloadBtn").addEventListener("click", function () {
     if (!savedPayload) return;
     const blob = new Blob([JSON.stringify(savedPayload, null, 2)], { type: "application/json" });
